@@ -1583,12 +1583,13 @@ FUNCTION void Make_FishSelex()
     tz=styr+(y-styr)*nseas+s-1;  // can use y, not yf, because wtage_emp values are read in and can extend into forecast
     for (f=1;f<=Nfleet;f++)
     {
-      if(timevary_sel(yf,f)>0 || timevary_sel(yf,f+Nfleet)>0 || WTage_rd==1 || save_for_report>0)
+      fs=f+Nfleet;  //  for the age dimensioning
+      if(timevary_sel(yf,f)>0 || timevary_sel(yf,fs)>0 || WTage_rd==1 || save_for_report>0)
       {
         makefishsel_yr = yf;
-        fs=f+Nfleet;  //  for the age dimensioning
         if (WTage_rd==1 || (seltype(f,1)==0 && seltype(f,2)==0) )  //  empirical wt-at-age or no size-selectivity; so no size-based calculations
         {
+           echoinput<<f<<" doing age-based selex "<<seltype(fs,2)<<endl;
           if(WTage_rd==1)
           {
             sel_al_1(s,g,f)=elem_prod(sel_a(yf,f,gg),WTage_emp(tz,GP3(g),f));   // selected wt-at-age
@@ -1613,18 +1614,18 @@ FUNCTION void Make_FishSelex()
             }
             case 1:
             {
-              sel_al_2(s,g,f)=elem_prod(sel_al_1(s,g,f),retain_a(y,fs,gg));  //  retained wt-at-age
-              sel_al_4(s,g,f)=elem_prod(sel_al_3(s,g,f),retain_a(y,fs,gg));  //  retained numbers
+              sel_al_2(s,g,f)=elem_prod(sel_al_1(s,g,f),retain_a(y,f,gg));  //  retained wt-at-age
+              sel_al_4(s,g,f)=elem_prod(sel_al_3(s,g,f),retain_a(y,f,gg));  //  retained numbers
               deadfish_B(s,g,f)=sel_al_2(s,g,f);  //  dead wt
               deadfish(s,g,f)=sel_al_4(s,g,f);  //  dead numbers
               break;
             }
             case 2:
             {
-              sel_al_2(s,g,f)=elem_prod(sel_al_1(s,g,f),retain_a(y,fs,gg));  //  retained wt-at-age
-              sel_al_4(s,g,f)=elem_prod(sel_al_3(s,g,f),retain_a(y,fs,gg));  //  retained numbers
-              deadfish_B(s,g,f)=elem_prod(sel_al_2(s,g,f),discmort_a(y,fs,gg));  //  dead wt
-              deadfish(s,g,f)=elem_prod(sel_al_4(s,g,f),discmort_a(y,fs,gg));  //  dead numbers
+              sel_al_2(s,g,f)=elem_prod(sel_al_1(s,g,f),retain_a(y,f,gg));  //  retained wt-at-age
+              sel_al_4(s,g,f)=elem_prod(sel_al_3(s,g,f),retain_a(y,f,gg));  //  retained numbers
+              deadfish_B(s,g,f)=elem_prod(sel_al_2(s,g,f),discmort_a(y,f,gg));  //  dead wt
+              deadfish(s,g,f)=elem_prod(sel_al_4(s,g,f),discmort_a(y,f,gg));  //  dead numbers
               break;
             }
             case 3:  //  all selected fish are dead

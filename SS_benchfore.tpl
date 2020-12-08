@@ -41,6 +41,16 @@ FUNCTION void setup_Benchmark()
           tempvec_a.initialize();
           for (y=Fcast_Sel_yr1;y<=Fcast_Sel_yr2;y++) {tempvec_a+=discmort2_a(y,f,gg);}
           for (y=endyr+1;y<=YrMax;y++) {discmort2_a(y,f,gg)=tempvec_a/temp;}
+		  
+		  if(seltype(f+Nfleet,2)>0)  // using age retention
+		  {
+          tempvec_a.initialize();
+          for (y=Fcast_Sel_yr1;y<=Fcast_Sel_yr2;y++) {tempvec_a+=retain_a(y,f,gg);}
+          for (y=endyr+1;y<=YrMax;y++) {retain_a(y,f,gg)=tempvec_a/temp;}
+          tempvec_a.initialize();
+          for (y=Fcast_Sel_yr1;y<=Fcast_Sel_yr2;y++) {tempvec_a+=discmort_a(y,f,gg);}
+          for (y=endyr+1;y<=YrMax;y++) {discmort_a(y,f,gg)=tempvec_a/temp;}
+		  }
         }
       }
         t=styr+(endyr+1-styr)*nseas+spawn_seas-1;
@@ -200,6 +210,17 @@ FUNCTION void setup_Benchmark()
           tempvec_a.initialize();
           for (y=Bmark_Yr(3);y<=Bmark_Yr(4);y++) {tempvec_a+=discmort2_a(y,f,gg);}
           discmort2_a(styr-3,f,gg)=tempvec_a/temp;
+
+		  if(seltype(f+Nfleet,2)>0)  // using age retention
+		  {
+          tempvec_a.initialize();
+          for (y=Bmark_Yr(3);y<=Bmark_Yr(4);y++) {tempvec_a+=retain_a(y,f,gg);}
+          retain_a(styr-3,f,gg)=tempvec_a/temp;
+          tempvec_a.initialize();
+          for (y=Bmark_Yr(3);y<=Bmark_Yr(4);y++) {tempvec_a+=discmort_a(y,f,gg);}
+          discmort_a(styr-3,f,gg)=tempvec_a/temp;
+		  }
+
         }
 
     //  set-up relative F among fleets and seasons

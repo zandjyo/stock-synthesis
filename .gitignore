@@ -6,6 +6,8 @@
 *.htp
 *.obj
 *.log
+*.json
 ss.tpl
 ss_opt.tpl
 ss_trans.tpl
+NPP_SS.*

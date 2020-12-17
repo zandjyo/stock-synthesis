@@ -691,7 +691,7 @@ FINAL_SECTION
 //  SS_Label_Info_12.3.2 #Set save_for_report=1 then call initial_conditions and time_series to get other output quantities
     save_for_report=1;
     bigsaver=1;
-    if(pick_report_use(54)=="Y") 
+    if(pick_report_use(60)=="Y") 
     {
     	write_bodywt=1;
     bodywtout<<nages<<" # maxage"<<endl;

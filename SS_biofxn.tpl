@@ -819,6 +819,12 @@ FUNCTION void get_natmort()
   dvariable Loren_M1;
   dvariable Loren_temp;
   dvariable Loren_temp2;
+  dvariable Maunder_Mjuv;
+  dvariable Maunder_lambda;
+  dvariable Maunder_Mmat;
+  dvariable Maunder_beta;
+  dvariable Maunder_L50;
+  
   dvariable t_age;
   int gpi;
   int Do_AveAge;
@@ -1005,6 +1011,39 @@ FUNCTION void get_natmort()
               surv2(s,gpi)=square(surv1(s,gpi));
             } // end season
             break;
+          }
+  //  SS_Label_Info_17.1.2.5  #case 5:  age and gender specific M linked to maturity (developed by Mark Maunder and contributed to the SS project in Feb 2021).
+          case 5:
+          {
+            Maunder_Mjuv = natMparms(1,gp);     //  P1
+            Maunder_lambda = natMparms(2,gp);      //  P2
+            Maunder_Mmat = natMparms(3,gp);    //  P3
+            if(Maunder_MatType==2){	//use the SS mat50% and mat_slope parameters 
+  		        Maunder_L50  = wtlen_p(GPat,3); //from length-logistic selectivity, same for both sexes; so MUST use that maturity option with this M option
+          		Maunder_beta = wtlen_p(GPat,4); //slope
+  		      }
+            if(Maunder_MatType==3){	//use two parameters  mat50% and mat_slope.
+        		Maunder_L50  = natMparms(4,gp);    //    P5
+		        Maunder_beta = natMparms(5,gp);    //  P4
+            }
+            
+        		if(Maunder_MatType==1){
+              for (s=nseas;s>=1;s--)
+              {
+//              ALK_idx=(s-1)*N_subseas+mid_subseas;  //  for midseason
+                for (a=nages; a>=0;a--)
+                {
+        	    		natM(s,gpi,a) = Maunder_Mjuv*pow(Ave_Size(t,mid_subseas,g,a)/Maunder_Lmat,Maunder_lambda)
+        	    		+(Maunder_Mmat-Maunder_Mjuv*pow(Ave_Size(t,mid_subseas,g,a)/Maunder_Lmat,Maunder_lambda))*XXmaturity_Fem(a)XX;
+        	    	}
+        	    }
+//  age_mature=ALK(ALK_idx,g,a)*mat_len(GP4(g))
+        		}
+        		else
+        		{
+        		natM(s,gpi,a) = Maunder_Mjuv*pow(Ave_Size(t,ALK_idx,g,a)/Maunder_Lmat,Maunder_lambda)+(Maunder_Mmat-Maunder_Mjuv*pow(Ave_Size(t,ALK_idx,g,a)/Maunder_Lmat,Maunder_lambda))/(1.0+mfexp(Maunder_beta*(Ave_Size(t,ALK_idx,g,a)-Maunder_L50)));
+        		}
+          	break;
           }
         }  // end natM_type switch
 

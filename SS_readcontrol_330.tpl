@@ -593,7 +593,12 @@
   int N_growparms
   int N_M_Grow_parms
   int recr_dist_parms
+  int natM_type
+  int natM_5_opt  //  option selection for Maunder approach
   imatrix MGparm_point(1,gender,1,N_GP)
+  ivector N_natMparms_vec(0,5);
+  vector NatM_break(1,1);
+  matrix Age_NatMort(1,1,1,1);
   number natM_amin;
   number natM_amax;
   number fracfemale;
@@ -602,35 +607,65 @@
   !!fracfemale_mult=1.0;  //  multiplier used in female SSB calc; gets changed to femfrac(1) if gender_rd==-1
 
 // read natmort setup
-  init_int natM_type;  //  0=1Parm; 1=segmented; 2=Lorenzen; 3=agespecific; 4=agespec with seas interpolate
-  !!echoinput<<natM_type<<" natM_type"<<endl;
-  !! if(natM_type==1 || natM_type==2) {k=1;} else {k=0;}
-  init_vector tempvec4(1,k)
  LOCAL_CALCS
-  k=0; k1=0;
-  if(natM_type==0)
-  {N_natMparms=1;}
-  else if(natM_type==1)
+//  0=1Parm; 1=segmented; 2=Lorenzen; 3=agespecific; 4=agespec with seas interpolate; 5=Maunder_M
+  N_natMparms_vec.fill("{1,99,1,0,0,99}");
+  *(ad_comm::global_datafile) >> natM_type;
+  echoinput<<natM_type<<" natM_type"<<endl;
+  N_natMparms=N_natMparms_vec(natM_type);
+  switch(natM_type)
   {
-    N_natMparms=tempvec4(1);  k=N_natMparms;
-    echoinput<<N_natMparms<<" N_natMparms for segmented approach"<<endl;
-  }
-  else if(natM_type==2)
-  {
-    natM_amin=tempvec4(1);  N_natMparms=1;
-    echoinput<<natM_amin<<" natM_A for Lorenzen"<<endl;
-  }
-  else
-  {
-    N_natMparms=0;
-    if(natM_type>=3) {k1=N_GP*gender;}  // for reading age_natmort
+  	case 0:
+  		{
+  			break;
+  		}
+  	case 1:
+  		{
+       *(ad_comm::global_datafile) >> N_natMparms;  // overwrite initial setup
+   	   NatM_break.deallocate();
+       NatM_break.allocate(1,N_natMparms);
+       echoinput<<NatM_break<<" NatM_breakages "<<endl;
+       echoinput<<N_natMparms<<" N_natMparms for segmented approach"<<endl;
+  		 break;
+  		}
+  	case 2:
+  		{
+       *(ad_comm::global_datafile) >> natM_amin;
+       echoinput<<natM_amin<<" natM_A for Lorenzen"<<endl;
+  			break;
+  		}
+  	case 3:
+  		{
+  			//  same as 4
+  		}
+  	case 4:
+  		{
+      	Age_NatMort.deallocate();
+      	Age_NatMort.allocate(1,N_GP*gender,0,nages);
+      	for(gp=1;gp<=N_GP*gender;gp++)
+      	{
+          *(ad_comm::global_datafile) >> Age_NatMort(gp)(0,nages);
+      	}
+        echoinput<<" Age_NatMort "<<endl<<Age_NatMort<<endl;
+  			break;
+  		}
+  	case 5:
+  		{
+  //  Maunder et al. age and sex specific M
+  // A) read in an integer for the method to do maturity Maunder_MatType = 1,2,3
+       *(ad_comm::global_datafile) >> natM_5_opt;
+
+	// 1) use the SS maturity (for females, what about males)
+	// 2) use the SS mat50% and mat_slope parameters (for females, what about males)
+	// 3) read two parameters for each sex X GP that will be the mat50% and mat_slope.
+  // B) read in the value for Lmat* into variable Maunder_Lmat
+  // C) Later read two parameters for each GP (they are the same for each sex) that will be the M at Lmat* and Mjuv.
+  // D) Later read a parameter for each sex X GP that will be Mmat
+  //  RICK  
+  			break;
+  		}
   }
  END_CALCS
-
-  init_vector NatM_break(1,k);  // these breakpoints only get read for natM_type=1
-  !!if(k>0) echoinput<<NatM_break<<" NatM_breakages "<<endl;
-  init_matrix Age_NatMort(1,k1,0,nages)
-  !!if(k1>0) echoinput<<" Age_NatMort "<<Age_NatMort<<endl;
 
 // read growth setup
   init_int Grow_type  // 1=vonbert; 2=Richards; 3=age-specific K ascend;  4=age-specific K descend; 5=age-specific K; 6=read vector(not implemented); 8=growth cessation

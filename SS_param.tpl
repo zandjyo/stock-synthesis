@@ -74,7 +74,7 @@ PARAMETER_SECTION
   matrix mat_len(1,N_GP,1,nlength)
   matrix fec_len(1,N_GP,1,nlength)   // fecundity at length
   matrix mat_fec_len(1,N_GP,1,nlength)
-  matrix mat_age(1,N_GP,0,nages)
+  matrix mat_age(1,N_GP*gender,0,nages)  //  make gender specific to allow Maunder M options
   matrix Hermaphro_val(1,N_GP,0,nages)
 
   matrix catch_mult(styr-1,YrMax,1,Nfleet)

@@ -596,7 +596,6 @@
   int natM_type
   int natM_5_opt  //  option selection for Maunder approach
   imatrix MGparm_point(1,gender,1,N_GP)
-  ivector N_natMparms_vec(0,5);
   vector NatM_break(1,1);
   matrix Age_NatMort(1,1,1,1);
   number natM_amin;
@@ -608,28 +607,32 @@
 
 // read natmort setup
  LOCAL_CALCS
+   N_natMparms=0;
+   natM_5_opt=0;
+   MGparm_point.initialize();
 //  0=1Parm; 1=segmented; 2=Lorenzen; 3=agespecific; 4=agespec with seas interpolate; 5=Maunder_M
-  N_natMparms_vec.fill("{1,99,1,0,0,99}");
   *(ad_comm::global_datafile) >> natM_type;
   echoinput<<natM_type<<" natM_type"<<endl;
-  N_natMparms=N_natMparms_vec(natM_type);
   switch(natM_type)
   {
   	case 0:
   		{
+  			N_natMparms=1;
   			break;
   		}
   	case 1:
   		{
-       *(ad_comm::global_datafile) >> N_natMparms;  // overwrite initial setup
+       *(ad_comm::global_datafile) >> N_natMparms;
+       echoinput<<N_natMparms<<" N breakpoints "<<endl;
    	   NatM_break.deallocate();
        NatM_break.allocate(1,N_natMparms);
-       echoinput<<NatM_break<<" NatM_breakages "<<endl;
-       echoinput<<N_natMparms<<" N_natMparms for segmented approach"<<endl;
+       *(ad_comm::global_datafile) >> NatM_break(1,N_natMparms);
+       echoinput<<NatM_break<<" NatM_age_segment_breaks "<<endl;
   		 break;
   		}
   	case 2:
   		{
+  			N_natMparms=1;
        *(ad_comm::global_datafile) >> natM_amin;
        echoinput<<natM_amin<<" natM_A for Lorenzen"<<endl;
   			break;
@@ -640,13 +643,14 @@
   		}
   	case 4:
   		{
+  			N_natMparms=0;
       	Age_NatMort.deallocate();
       	Age_NatMort.allocate(1,N_GP*gender,0,nages);
       	for(gp=1;gp<=N_GP*gender;gp++)
       	{
           *(ad_comm::global_datafile) >> Age_NatMort(gp)(0,nages);
       	}
-        echoinput<<" Age_NatMort "<<endl<<Age_NatMort<<endl;
+        echoinput<<" Age_NatMort empirical input: "<<endl<<Age_NatMort<<endl;
   			break;
   		}
   	case 5:
@@ -654,14 +658,17 @@
   //  Maunder et al. age and sex specific M
   // A) read in an integer for the method to do maturity Maunder_MatType = 1,2,3
        *(ad_comm::global_datafile) >> natM_5_opt;
+        echoinput<<" Maunder_NatMort option: "<<natM_5_opt<<endl;
+  			N_natMparms=4;
+        if(natM_5_opt==3) N_natMparms=6;
+//            Maunder_Mjuv = natMparms(1,gp);
+//            Maunder_lambda = natMparms(2,gp);
+//            Maunder_lmat = natMparms(3,gp);
+//            Maunder_Mmat = natMparms(4,gp);
+//            if(natM_5_opt==3){	//use two parameters  mat50% and mat_slope.
+//        		Maunder_L50  = natMparms(5,gp);
+//		        Maunder_beta = natMparms(6,gp); 
 
-	// 1) use the SS maturity (for females, what about males)
-	// 2) use the SS mat50% and mat_slope parameters (for females, what about males)
-	// 3) read two parameters for each sex X GP that will be the mat50% and mat_slope.
-  // B) read in the value for Lmat* into variable Maunder_Lmat
-  // C) Later read two parameters for each GP (they are the same for each sex) that will be the M at Lmat* and Mjuv.
-  // D) Later read a parameter for each sex X GP that will be Mmat
-  //  RICK  
   			break;
   		}
   }
@@ -948,14 +955,72 @@
     for (gp=1;gp<=N_GP;gp++)
     {
       MGparm_point(gg,gp)=ParCount+1;  //  starting pointer
-      for (k=1;k<=N_natMparms;k++)
+      switch (natM_type)
       {
-        ParCount++;
-        onenum="    ";
-        sprintf(onenum, "%d", k);
-        ParmLabel+="NatM_p_"+onenum+"_"+GenderLbl(gg)+GP_Lbl(gp);
-        Parm_info+="val";
-        Parm_minmax.push_back (3);
+        case 0:
+        {
+          ParCount++;
+          ParmLabel+="NatM_uniform_"+GenderLbl(gg)+GP_Lbl(gp);
+          Parm_info+="val";
+          Parm_minmax.push_back (3);
+        	break;
+        }
+        case 1:
+        {
+          for (k=1;k<=N_natMparms;k++)
+          {
+            ParCount++;
+            onenum="    ";
+            sprintf(onenum, "%d", k);
+            ParmLabel+="NatM_break_"+onenum+"_"+GenderLbl(gg)+GP_Lbl(gp);
+            Parm_info+="val";
+            Parm_minmax.push_back (3);
+          }
+        	break;
+        }
+        case 2:
+        {
+          ParCount++;
+          ParmLabel+="NatM_Lorenzen_"+GenderLbl(gg)+GP_Lbl(gp);
+          Parm_info+="val";
+          Parm_minmax.push_back (3);
+        	break;
+        }
+        case 5:  //  new age and maturity specific by Mark Maunder
+        {
+          ParCount++;
+          ParmLabel+="NatM_Mjuv_"+GenderLbl(gg)+GP_Lbl(gp);
+          Parm_info+="val";
+          Parm_minmax.push_back (3);
+          ParCount++;
+          ParmLabel+="NatM_power_"+GenderLbl(gg)+GP_Lbl(gp);
+          Parm_info+="val";
+          Parm_minmax.push_back (3);
+          ParCount++;
+          ParmLabel+="NatM_Lmat_"+GenderLbl(gg)+GP_Lbl(gp);
+          Parm_info+="val";
+          Parm_minmax.push_back (3);
+          ParCount++;
+          ParmLabel+="NatM_Mmat_"+GenderLbl(gg)+GP_Lbl(gp);
+          Parm_info+="val";
+          Parm_minmax.push_back (3);
+          if(natM_5_opt==3)
+          {
+          ParCount++;
+          ParmLabel+="NatM_L50_"+GenderLbl(gg)+GP_Lbl(gp);
+          Parm_info+="val";
+          Parm_minmax.push_back (3);
+          ParCount++;
+          ParmLabel+="NatM_slope_"+GenderLbl(gg)+GP_Lbl(gp);
+          Parm_info+="val";
+          Parm_minmax.push_back (3);
+         }
+        	break;
+        }
+        default:
+        {
+        	break;
+        }
       }
       switch (Grow_type)
       {

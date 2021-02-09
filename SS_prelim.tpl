@@ -916,6 +916,8 @@ PRELIMINARY_CALCS_SECTION
         get_growth3(styr,t,s, subseas);  //  this will calculate the cv of growth for all subseasons of first year
       }
     }
+    echoinput<<"ready to do wt@len, maturity, etc. "<<endl;
+    get_wtlen();
     echoinput<<"ready to do natmort "<<endl;
     get_natmort();
     natM = value(natM);
@@ -923,7 +925,6 @@ PRELIMINARY_CALCS_SECTION
     surv2 = value(surv2);
 
 //  SS_Label_Info_6.8.5 #Call fxn get_wtlen()  calculate weight-at-length and maturity vectors
-    get_wtlen();
     wt_len=value(wt_len);
     wt_len2=value(wt_len2);
     wt_len_fd=value(wt_len_fd);

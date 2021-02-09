@@ -1379,14 +1379,17 @@ FUNCTION void write_nucontrol()
   report4<<"#_Prior_codes:  0=none; 6=normal; 1=symmetric beta; 2=CASAL's beta; 3=lognormal; 4=lognormal with biascorr; 5=gamma"<<endl;
   report4<<"#"<<endl<<"# setup for M, growth, wt-len, maturity, fecundity, (hermaphro), recr_distr, cohort_grow, (movement), (age error), (catch_mult), sex ratio "<<endl;
   report4<<"#"<<endl<<natM_type<<" #_natM_type:_0=1Parm; 1=N_breakpoints;_2=Lorenzen;_3=agespecific;_4=agespec_withseasinterpolate"<<endl;
-    if(natM_type==1)
+    if(natM_type==0)
+    {report4<<"  #_no additional input for selected M option; read 1P per morph"<<endl;}
+    else if(natM_type==1)
     {report4<<N_natMparms<<" #_N_breakpoints"<<endl<<NatM_break<<" # age(real) at M breakpoints"<<endl;}
     else if(natM_type==2)
     {report4<<natM_amin<<" #_reference age for Lorenzen M; read 1P per morph"<<endl;}
-    else if(natM_type>=3)
+    else if(natM_type>=3 && natM_type<5)
     {report4<<" #_Age_natmort_by sex x growthpattern (nest GP in sex)"<<endl<<Age_NatMort<<endl;}
     else
-    {report4<<"  #_no additional input for selected M option; read 1P per morph"<<endl;}
+    {report4<<"  #_Maunder_M: suboptions 1, 2, 3"<<endl;
+    	report4<<natM_5_opt<<"  #_Maunder_M_option"}
     report4<<"#"<<endl;
     report4<<Grow_type<<" # GrowthModel: 1=vonBert with L1&L2; 2=Richards with L1&L2; 3=age_specific_K_incr; 4=age_specific_K_decr; 5=age_specific_K_each; 6=NA; 7=NA; 8=growth cessation"<<endl;
     if(Grow_type<=5 || Grow_type==8)

@@ -107,6 +107,7 @@ FUNCTION void get_initial_conditions()
     }
   }
 
+  if(MG_active(3)>0) get_wtlen();
   if(MG_active(1)>0) get_natmort();
  #ifdef DO_ONCE
   if(do_once==1) cout<<" natmort OK"<<endl;
@@ -122,7 +123,6 @@ FUNCTION void get_initial_conditions()
     }
   }
 
-  if(MG_active(3)>0) get_wtlen();
   if(MG_active(4)>0) get_recr_distribution();
   if(y>=Bmark_Yr(7)&&y<=Bmark_Yr(8))
   {
@@ -535,7 +535,7 @@ FUNCTION void get_time_series()
   //  SS_Label_Info_24.1 #Loop the years
   for (y=styr;y<=endyr;y++)
   {
-    yz=y;
+    yz=y;  //  used in the biology calculations
     if(STD_Yr_Reverse_F(y)>0) F_std(STD_Yr_Reverse_F(y))=0.0;
     t_base=styr+(y-styr)*nseas-1;
 
@@ -598,6 +598,7 @@ FUNCTION void get_time_series()
           ALK_subseas_update=1;  // indicate that all ALKs will need re-estimation
           get_growth2(y);
         }
+      if(timevary_MG(y,3)>0) get_wtlen();
       if(timevary_MG(y,1)>0) get_natmort();
       if(y>=Bmark_Yr(1)&&y<=Bmark_Yr(2))
       {
@@ -609,7 +610,6 @@ FUNCTION void get_time_series()
           surv2_unf(s,gp)+=surv2(s,gp);
         }
       }
-      if(timevary_MG(y,3)>0) get_wtlen();
       if(timevary_MG(y,4)>0) get_recr_distribution();
       if(y>=Bmark_Yr(7)&&y<=Bmark_Yr(8))
       {

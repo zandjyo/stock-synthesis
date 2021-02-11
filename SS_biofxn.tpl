@@ -825,6 +825,7 @@ FUNCTION void get_natmort()
   dvariable Maunder_Mmat;
   dvariable Maunder_beta;
   dvariable Maunder_L50;
+  dvar_vector XX_mature(0,nages);
   
   dvariable t_age;
   int gpi;
@@ -1024,25 +1025,22 @@ FUNCTION void get_natmort()
             if(natM_5_opt<=2){	//use the SS mat50% and mat_slope parameters 
   		        Maunder_L50  = wtlen_p(GPat,3); //from length-logistic selectivity, same for both sexes; so MUST use that maturity option with this M option
           		Maunder_beta = wtlen_p(GPat,4); //slope
+          		XX_mature=mat_len_age(GPat);
+          		// these will not get used because mat_len_age(GPat) already calculated when fec(g) is calculated
   		      }
             else if(natM_5_opt==3){	//use two new parameters  mat50% and mat_slope, which can be Gpat and sex specific.
         		Maunder_L50  = natMparms(5,gp);    //
 		        Maunder_beta = natMparms(6,gp);    //
             }
             
-              dvar_vector XX_mature(0,nages);              
               for (s=1;s<=nseas;s++)
               {
                 t=t_base+s;
-//  need age maturity by sex and season
+//  using the most recent spawn seeason's age-maturity for females, unless doing option 3 here
 //  this code uses the length maturity parameters for females, and the ave_size for the current sex in the current season
-//  or can use age maturity directly
-//  will not work for the option that reads length maturity as empirical vector
-//  that would require multiplying that vector by the ALK column for each age;  maybe later!
-//  add shortcut method that uses the mean length-at-age, rather than integrating over the length distribution at age
 //                if(natM_5_opt<=2){   //  uses the SS maturity parameters, which could be in terms of length or age
 //                mat_len(GPat) =        1./(1. + mfexp(wtlen_p(GPat,4)*(len_bins_m(1,nlength)-wtlen_p(GPat,3))));
-                  mat_age(gp)(0,nages) = 1./(1. + mfexp(Maunder_beta*(Ave_Size(t,mid_subseas,g)(0,nages)-Maunder_L50)));
+                  XX_mature(First_Mature_Age,nages) = 1./(1. + mfexp(Maunder_beta*(Ave_Size(t,mid_subseas,g)(First_Mature_Age,nages)-Maunder_L50)));
 //                }
 
 //                  for (a=0; a<=nages;a++)
@@ -1051,17 +1049,16 @@ FUNCTION void get_natmort()
 //  natM(s,gpi,a) = Maunder_Mjuv*pow(Ave_Size(t,ALK_idx,g,a)/Maunder_Lmat,Maunder_lambda)+(Maunder_Mmat-Maunder_Mjuv*pow(Ave_Size(t,ALK_idx,g,a)/Maunder_Lmat,Maunder_lambda))*XXmaturity_Fem(a)XX;
 // Maunder_Lmat was not defined
         	    		natM(s,gpi) = Maunder_Mjuv*pow(Maunder_Lmat/Ave_Size(t,mid_subseas,g),Maunder_lambda);
-        	    		natM(s,gpi) += (Maunder_Mmat-Maunder_Mjuv)*mat_age(gp);
+        	    		natM(s,gpi) += (Maunder_Mmat-Maunder_Mjuv)*XX_mature;
         	    	}
         	    	if(do_once==1)
         	    		{
                     echoinput<<" seas "<<s<<" juv "<<Maunder_Mjuv<<" mat "<<Maunder_Mmat<<" lambda "<<Maunder_lambda<<endl;
                     echoinput<<" L50 "<<Maunder_L50<<" beta "<<Maunder_beta<<" Lmat "<<Maunder_Lmat<<endl;
                     echoinput<<"avesize "<<Ave_Size(t,mid_subseas,g)<<endl;
-                    echoinput<<"Age-sex_mature: "<<mat_age(gp)<<endl;
+                    echoinput<<"Age_mature: "<<XX_mature<<endl;
         	      		echoinput<<" Mjuv: "<<Maunder_Mjuv*pow(Maunder_Lmat/Ave_Size(t,mid_subseas,g),Maunder_lambda)<<endl;
-        	      		echoinput<<" Mmat: "<<(Maunder_Mmat-Maunder_Mjuv)*mat_age(gp) << endl;
-            	    	echoinput<<"natM: "<<natM(s,gpi)<<endl;
+        	      		echoinput<<" Mmat: "<<(Maunder_Mmat-Maunder_Mjuv)*XX_mature<< endl;
         	    		}
         	    }
           	break;
@@ -1077,7 +1074,7 @@ FUNCTION void get_natmort()
  #ifdef DO_ONCE
         if(do_once==1)
         {
-         for(s=1;s<=nseas;s++) echoinput<<"Natmort seas:"<<s<<" sex:"<<gg<<" Gpat:"<<GPat<<" sex*Gpat:"<<gp<<" settlement:"<<settle<<" gpi:"<<gpi<<" M: "<<natM(s,gpi)<<endl;
+         for(s=1;s<=nseas;s++) echoinput<<"Natmort seas:"<<s<<" sex:"<<gg<<" Gpat:"<<GPat<<" sex*Gpat:"<<gp<<" settlement:"<<settle<<" gpi:"<<gpi<<endl<<" M: "<<natM(s,gpi)<<endl;
         }
  #endif
       } //  end use of this morph
@@ -1304,10 +1301,7 @@ FUNCTION void get_wtlen()
 
       if(s==spawn_seas && gg==1)  // get biology of maturity and fecundity for females only
       {
-// #ifdef DO_ONCE
-//         if(do_once==1) 
-         	echoinput<<"process maturity fecundity using option: "<<Maturity_Option<<endl<<GPat<<" "<<wtlen_p(GPat,4)<<endl;
-// #endif
+         	echoinput<<"maturity option: "<<Maturity_Option<<" parms: "<<wtlen_p(GPat)(3,4)<<endl;
           switch(Maturity_Option)
           {
             case 1:  //  Maturity_Option=1  length logistic
@@ -1339,13 +1333,23 @@ FUNCTION void get_wtlen()
               break;
             }
           }
+          if(First_Mature_Age>0)
+          {mat_age(GPat)(0,First_Mature_Age-1)=0.;}
+          
+          mat_len_age(GPat)=mat_age(GPat);  // age component of maturity
+          warning<<GPat<<" "<<gg<<" "<<" age comp: "<<mat_len_age(GPat)<<endl;
+          if(Maturity_Option==1 || Maturity_Option==5){
+            ALK_idx=(spawn_seas-1)*N_subseas+spawn_subseas;
+            mat_len_age(GPat)=elem_prod(mat_len_age(GPat),ALK(ALK_idx,g)*mat_len(GPat));  //  covers both age and length dimension
+          warning<<" age-len comp: "<<mat_len_age(GPat)<<endl;
+          }
+          
  #ifdef DO_ONCE
            if(do_once==1) echoinput<<"gp: "<<GPat<<" matlen: "<<mat_len(GPat)<<endl;
            if(do_once==1) echoinput<<"gp: "<<GPat<<" matage: "<<mat_age(GPat)<<endl;
  #endif
-          if(First_Mature_Age>0)
-          {mat_age(GPat)(0,First_Mature_Age-1)=0.;}
 
+         	echoinput<<"fecundity option: "<<Fecund_Option<<" parms: "<<wtlen_p(GPat)(5,6)<<endl;
           switch (Fecund_Option)
           {
             case 1:    // as eggs/kg (SS original configuration)
@@ -1735,7 +1739,8 @@ FUNCTION void Make_Fecundity()
         }
         default:
         {
-              int ALK_finder=(ALK_idx-1)*gmorph+g;
+          int ALK_finder=(ALK_idx-1)*gmorph+g;
+          mat_len_age(GPat)=mat_age(GPat);
           for(a=First_Mature_Age;a<=nages;a++)
           {
             tempvec_a(a) = ALK(ALK_idx,g,a)(ALK_range_g_lo(ALK_finder,a),ALK_range_g_hi(ALK_finder,a)) *mat_fec_len(GPat)(ALK_range_g_lo(ALK_finder,a),ALK_range_g_hi(ALK_finder,a));
@@ -1744,45 +1749,6 @@ FUNCTION void Make_Fecundity()
         }
       }
 
- /*
-      switch(Maturity_Option)
-      {
-        case 1:  //  Maturity_Option=1  length logistic
-        {
-//          for(a=0;a<=nages;a++)
-//          {
-//            fec(g,a) = ALK(ALK_idx,g,a)(ALK_range_g_lo(g,a),ALK_range_g_hi(g,a)) *mat_fec_len(GPat)(ALK_range_g_lo(g,a),ALK_range_g_hi(g,a))*mat_age(GPat,a);  //  reproductive output at age
-//          }
-//          fec(g) = elem_prod(ALK(ALK_idx,g)*mat_fec_len(GPat),mat_age(GPat));  //  reproductive output at age
-          break;
-        }
-        case 2:  //  Maturity_Option=2  age logistic
-        {
-          fec(g) = elem_prod(ALK(ALK_idx,g)*mat_fec_len(GPat),mat_age(GPat));  //  reproductive output at age
-          break;
-        }
-        case 3:  //  Maturity_Option=3  read age-maturity
-        {
-          fec(g) = elem_prod(ALK(ALK_idx,g)*mat_fec_len(GPat),mat_age(GPat));  //  reproductive output at age
-          break;
-        }
-        case 4:  //  Maturity_Option=4   read age-fecundity into age-maturity
-        {
-          fec(g)=Age_Maturity(GPat);
-          break;
-        }
-        case 5:  //  Maturity_Option=5   read age-fecundity from wtatage.ss
-        {
-          fec(g)=WTage_emp(t,GP3(g),-2);
-           break;
-        }
-        case 6:  //  Maturity_Option=6   read length-maturity
-        {
-          fec(g) = elem_prod(ALK(ALK_idx,g)*mat_fec_len(GPat),mat_age(GPat));  //  reproductive output at age
-          break;
-        }
-      }
- */
       if( bigsaver==1 )
       {
       switch(Maturity_Option)

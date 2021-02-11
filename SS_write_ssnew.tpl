@@ -1389,7 +1389,7 @@ FUNCTION void write_nucontrol()
     {report4<<" #_Age_natmort_by sex x growthpattern (nest GP in sex)"<<endl<<Age_NatMort<<endl;}
     else
     {report4<<"  #_Maunder_M: suboptions 1, 2, 3"<<endl;
-    	report4<<natM_5_opt<<"  #_Maunder_M_option"}
+    	report4<<natM_5_opt<<"  #_Maunder_M_option";}
     report4<<"#"<<endl;
     report4<<Grow_type<<" # GrowthModel: 1=vonBert with L1&L2; 2=Richards with L1&L2; 3=age_specific_K_incr; 4=age_specific_K_decr; 5=age_specific_K_each; 6=NA; 7=NA; 8=growth cessation"<<endl;
     if(Grow_type<=5 || Grow_type==8)

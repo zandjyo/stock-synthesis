@@ -74,7 +74,7 @@ PARAMETER_SECTION
   matrix mat_len(1,N_GP,1,nlength)
   matrix fec_len(1,N_GP,1,nlength)   // fecundity at length
   matrix mat_fec_len(1,N_GP,1,nlength)
-  matrix mat_age(1,N_GP*gender,0,nages)  //  make gender specific to allow Maunder M options
+  matrix mat_age(1,N_GP,0,nages)
   matrix Hermaphro_val(1,N_GP,0,nages)
 
   matrix catch_mult(styr-1,YrMax,1,Nfleet)
@@ -85,7 +85,11 @@ PARAMETER_SECTION
 
  LOCAL_CALCS
    mat_len=1.0;
-   mat_age=1.0;
+   mat_len_age.initialize();
+   mat_age.initialize();
+ 	for(GPat=1;GPat<=N_GP;GPat++){
+      mat_age(GPat)(First_Mature_Age,nages)=1.0;
+   }
    mat_fec_len=1.0;
    fec_len=1.0;
  END_CALCS

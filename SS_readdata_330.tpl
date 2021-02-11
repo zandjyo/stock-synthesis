@@ -1219,10 +1219,6 @@
   {
     N_warn++; cout<<" EXIT - see warning "<<endl;  warning<<N_warn<<" Data length bins extend beyond pop len bins "<<len_bins_dat(nlen_bin)<<" "<<len_bins(nlength)<<endl; exit(1);
   }
-  if(len_bins_dat(nlen_bin)<len_bins(nlength))
-  {
-    N_warn++;  warning<<N_warn<<" Data length bins stop before max pop len bins; "<<len_bins_dat(nlen_bin)<<" is < "<<len_bins(nlength)<<"; suggest make them same"<<endl;
-  }
   echoinput<<endl<<"Processed Data length bin info "<<endl<<len_bins_dat<<endl;
   }
  END_CALCS

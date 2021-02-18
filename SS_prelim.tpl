@@ -917,21 +917,6 @@ PRELIMINARY_CALCS_SECTION
       }
     }
     echoinput<<"ready to do wt@len, maturity, etc. "<<endl;
-    get_wtlen();
-    echoinput<<"ready to do natmort "<<endl;
-    get_natmort();
-    natM = value(natM);
-    surv1 = value(surv1);
-    surv2 = value(surv2);
-
-//  SS_Label_Info_6.8.5 #Call fxn get_wtlen()  calculate weight-at-length and maturity vectors
-    wt_len=value(wt_len);
-    wt_len2=value(wt_len2);
-    wt_len_fd=value(wt_len_fd);
-    mat_len=value(mat_len);
-    mat_fec_len=value(mat_fec_len);
-    mat_age=value(mat_age);
-
     for (s=1;s<=nseas;s++)
     {
       t = styr+s-1;
@@ -942,17 +927,29 @@ PRELIMINARY_CALCS_SECTION
         Make_AgeLength_Key(s,subseas);   //  ALK_idx calculated within Make_AgeLength_Key
         ALK(ALK_idx) = value(ALK(ALK_idx));
       }
-//  SPAWN-RECR:   calc fecundity in preliminary_calcs
-      if(s==spawn_seas)
-      {
-      	echoinput<<" spawn "<<endl;
-        subseas=spawn_subseas;
-        ALK_idx=(s-1)*N_subseas+subseas;
-        // get_growth3 already done for all subseasons
-        Make_Fecundity();
-        echoinput<<" fecundity ok "<<endl;
-      }
     }
+    get_wtlen();  // season loop internal
+    echoinput<<" do maturity, fecundity, composite in spawn_season "<<endl;
+//    s=spawn_seas;
+    get_mat_fec();
+    if(Hermaphro_Option!=0) get_Hermaphro();
+//    subseas=spawn_subseas;
+//    Make_Fecundity();
+//    echoinput<<" fecundity ok "<<endl;
+
+//  SS_Label_Info_6.8.5 #Call fxn get_wtlen()  calculate weight-at-length and maturity vectors
+    wt_len=value(wt_len);
+    wt_len2=value(wt_len2);
+    wt_len_fd=value(wt_len_fd);
+    mat_len=value(mat_len);
+    mat_fec_len=value(mat_fec_len);
+    mat_age=value(mat_age);
+
+    echoinput<<"ready to do natmort "<<endl;
+    get_natmort();
+    natM = value(natM);
+    surv1 = value(surv1);
+    surv2 = value(surv2);
 
 //  SS_Label_Info_6.8.6 #Call fxn get_recr_distribution() for distribution of recruitment among areas and seasons, which can be time-varying
       echoinput<<"do recrdist: "<<endl;

@@ -85,7 +85,6 @@ PARAMETER_SECTION
 
  LOCAL_CALCS
    mat_len=1.0;
-   mat_len_age.initialize();
    mat_age.initialize();
  	for(GPat=1;GPat<=N_GP;GPat++){
       mat_age(GPat)(First_Mature_Age,nages)=1.0;

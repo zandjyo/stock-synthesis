@@ -98,16 +98,7 @@ FUNCTION void get_initial_conditions()
         Make_AgeLength_Key(s, subseas);
       }
     }
- /*  //  not needed because all subseas just got done
-    if(spawn_subseas!=1 && spawn_subseas!=mid_subseas)
-    {
-    	s=spawn_seas;
-      subseas=spawn_subseas;
-      get_growth3(y,t,s, subseas);
-      Make_AgeLength_Key(s, subseas);  //  spawn subseas
-    }
- */
-    get_wtlen();   //  does all seasons
+     get_wtlen();   //  does all seasons
     get_mat_fec();  //  does only spawn_seas
     if(Hermaphro_Option!=0) get_Hermaphro();
   }
@@ -160,13 +151,6 @@ FUNCTION void get_initial_conditions()
     		age_age(save_agekey_count)=age_age(Use_AgeKeyZero);
     		age_err(save_agekey_count)=age_err(Use_AgeKeyZero);
     	}
- #ifdef DO_ONCE
-    if(do_once==1) 
-    	{
-    		cout<<" ageerr_key OK"<<endl;
-    		echoinput<<" ageerr_key recalc in "<<y<<endl;
-    	}
- #endif
   }
 
   if(save_for_report>0) 
@@ -191,14 +175,12 @@ FUNCTION void get_initial_conditions()
       {
         Wt_Age_beg(s,g)=WTage_emp(t,GP3(g),0);
         Wt_Age_mid(s,g)=WTage_emp(t,GP3(g),-1);
-//        if(s==spawn_seas) fec(g)=WTage_emp(t,GP3(g),-2);
+        if(s==spawn_seas) fec(g)=WTage_emp(t,GP3(g),-2);
       }
     }
       else if(MG_active(2)>0 || MG_active(3)>0 || save_for_report>0 || do_once==1)
     {
-      
-//       Make_Fecundity();
-//       if(do_once==1) echoinput<<"Save_fec in initial year: "<<t<<" %% "<<save_sel_fec(t,1,0)<<endl;
+//      if(do_once==1)  echoinput<<"updating wtatage "<<endl;
        for (g=1;g<=gmorph;g++)
        if(use_morph(g)>0)
        {
@@ -545,7 +527,7 @@ FUNCTION void get_time_series()
       SR_parm_byyr(y,f)=SR_parm_work(f);
    }
 
-  //  store beginning of year conditions, can be used for density-dependence
+  //  store beginning of year conditions, so can be used for density-dependence
     	{
     		env_data(y,-1)=log(SSB_current/SSB_yr(styr-1));  //  store most recent value for density-dependent effects, NOTE - off by a year if recalc'ed at beginning of season 1
         if(recdev_doit(y)>0)
@@ -564,6 +546,7 @@ FUNCTION void get_time_series()
         }
         else if(bioflag>0 || save_for_report==1)
         {
+//    if(do_once==1)  echoinput<<y<<" update ALK and wt_age_beg for season 1 only "<<endl;
           Make_AgeLength_Key(1,1);  //  this will give ALK before any time-varying parameter changes for this year
           for (g=1;g<=gmorph;g++)
           if(use_morph(g)>0)
@@ -600,10 +583,17 @@ FUNCTION void get_time_series()
       if(timevary_MG(y,0)>0 || save_for_report>0) get_MGsetup(y);
       if(bioflag>0)  //  timevary_MG(y,2) || timevary_MG(y,3) 
         {
-          ALK_subseas_update=1;  // indicate that all ALKs will need re-estimation
+//    if(do_once==1)  echoinput<<y<<" update growth, wtlen for all seasons, ALK for spawnseas, then mat_fec "<<endl;
+          ALK_subseas_update=1;  // this is a vector by ALK_IDX; fill with "1" indicates that all ALKs will need re-estimation
           get_growth2(y);  //  does all seasons
       		get_wtlen();   //  does all seasons
-      		//  need get_growth3 to have the needed ALK
+
+//  do spawnseas, spawn_subseas update
+//    	s=spawn_seas;
+//      subseas=spawn_subseas;
+          t=t_base+spawn_seas;
+          get_growth3(y,t,spawn_seas,spawn_subseas);
+          Make_AgeLength_Key(spawn_seas,spawn_subseas);  //  spawn subseas
           get_mat_fec();  //  does only spawn_seas
           if(Hermaphro_Option!=0) get_Hermaphro();
         }
@@ -649,10 +639,6 @@ FUNCTION void get_time_series()
         		age_age(save_agekey_count)=age_age(Use_AgeKeyZero);
         		age_err(save_agekey_count)=age_err(Use_AgeKeyZero);
         	}
-
- #ifdef DO_ONCE
-          if(do_once==1) echoinput<<" ageerr_key recalc in "<<y<<endl;
- #endif
         }
       }
 
@@ -682,6 +668,7 @@ FUNCTION void get_time_series()
         {
           Wt_Age_beg(s,g)=WTage_emp(t,GP3(g),0);
           Wt_Age_mid(s,g)=WTage_emp(t,GP3(g),-1);
+        if(s==spawn_seas) fec(g)=WTage_emp(t,GP3(g),-2);
         }
       }
       else if(bioflag>0 || save_for_report>0 || do_once==1)
@@ -769,7 +756,11 @@ FUNCTION void get_time_series()
       }
 
         Recruits=Spawn_Recr(SSB_use,R0_use,SSB_current);  // calls to function Spawn_Recr
+        if(docheckup==1) echoinput<<y<<" Recruits: "<<Recruits<<" SSB_unf "<<SSB_use<<" ssb_curr "<<SSB_current;
         apply_recdev(Recruits, R0_use);  //  apply recruitment deviation
+        if(docheckup==1) echoinput<<" after_dev: "<<Recruits<<endl;
+        if(docheckup==1) echoinput<<" make_mat_b: "<<make_mature_bio(1)<<endl;
+        if(docheckup==1) echoinput<<" make_mat_n: "<<make_mature_numbers(1)<<endl;
         
 // distribute Recruitment of age 0 fish among the current and future settlements; and among areas and morphs
             //  use t offset for each birth event:  Settlement_offset(settle)
@@ -797,7 +788,7 @@ FUNCTION void get_time_series()
                mfexp(natM(s,GP3(g),Settle_age(settle))*Settle_timing_seas(settle));
                Recr(p,t+Settle_seas_offset(settle))+=Recruits*recr_dist(y,GP(g),settle,p)*platoon_distr(GP2(g));
                //  the adjustment for mortality increases recruit value for elapsed time since begin of season because M will then be applied from beginning of season
-               if(docheckup==1) echoinput<<y<<" Recruits, dist, surv, result"<<Recruits<<" "<<recr_dist(y,GP(g),settle,p)<<" "<<mfexp(natM(s,GP3(g),Settle_age(settle))*Settle_timing_seas(settle))<<" "<<natage(t+Settle_seas_offset(settle),p,g,Settle_age(settle))<<endl;
+               if(docheckup==1) echoinput<<y<<" Recruits: "<<Recruits<<" dist: "<<recr_dist(y,GP(g),settle,p)<<" surv: "<<mfexp(natM(s,GP3(g),Settle_age(settle))*Settle_timing_seas(settle))<<" Numbers: "<<natage(t+Settle_seas_offset(settle),p,g,Settle_age(settle))<<endl;
             }
           }
       }
@@ -1465,9 +1456,9 @@ FUNCTION void get_time_series()
   if(Do_TG>0) Tag_Recapture();
 
   }  //  end time_series
- #ifdef DO_ONCE
-          if(do_once==1) echoinput<<" finished time series "<<endl;
- #endif
+// #ifdef DO_ONCE
+//          if(do_once==1) echoinput<<" finished time series "<<endl;
+// #endif
   
   //  SS_Label_Info_24.16  # end of time series function
 

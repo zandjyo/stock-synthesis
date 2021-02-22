@@ -1320,7 +1320,7 @@ FUNCTION void get_mat_fec();
   {
     g=g_finder(GPat,1);  //  note that GPat is nested in sex and only doing female here
     gp=GPat;  //  
-   	echoinput<<"fecundity option: "<<Fecund_Option<<" parms: "<<wtlen_p(GPat)(5,6)<<endl;
+   	if(do_once==1) echoinput<<"fecundity option: "<<Fecund_Option<<" parms: "<<wtlen_p(GPat)(5,6)<<endl;
     switch (Fecund_Option)
     {
       case 1:    // as eggs/kg (SS original configuration)
@@ -1369,7 +1369,7 @@ FUNCTION void get_mat_fec();
       }
     }
 
-    echoinput<<"maturity option: "<<Maturity_Option<<" parms: "<<wtlen_p(GPat)(3,4)<<endl;
+    if (do_once==1) echoinput<<"maturity option: "<<Maturity_Option<<" parms: "<<wtlen_p(GPat)(3,4)<<endl;
     switch(Maturity_Option)
     {
       case 1:  //  Maturity_Option=1  length logistic

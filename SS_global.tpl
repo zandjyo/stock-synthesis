@@ -714,6 +714,7 @@ FINAL_SECTION
     if(Do_Forecast>=0)
     {
       report5<<"THIS FORECAST FOR PURPOSES OF GETTING DISPLAY QUANTITIES"<<endl;
+     echoinput<<"global: THIS FORECAST FOR PURPOSES OF GETTING DISPLAY QUANTITIES"<<endl;
       if(did_MSY>0) show_MSY=0;  //  so to not repeat forecast_report.sso
       Get_Forecast();
       if(mceval_phase()==0) cout<<" finished forecast for reporting"<<endl;

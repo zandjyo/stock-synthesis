@@ -1288,6 +1288,7 @@ FUNCTION void Get_Forecast()
   
   for (int Fcast_Loop1=1; Fcast_Loop1<=jloop;Fcast_Loop1++)  //   for different forecast conditions
   {
+   echoinput<<"Fcast_Loop1: "<<Fcast_Loop1<<endl;
     switch(Fcast_Loop1)  //  select which ABC_loops to use
     {
       case 1:  // do OFL only
@@ -1339,12 +1340,21 @@ FUNCTION void Get_Forecast()
     surv2=surv2_endyr;
     
     y=endyr;
+
   {
     ALK_subseas_update=1;  //  to indicate that all ALKs need calculation
 //    if(MG_active(2)
-    	get_growth2(y);
+
     t=styr+(y-styr)*nseas-1;
-    
+//    if(timevary_MG(y,0)>0 || save_for_report>0) get_MGsetup(y);
+    echoinput<<endl<<" styr_size: "<<Ave_Size(styr,1,1,nages)<<" endyr-10 "<<Ave_Size(endyr-10,1,1,nages)<<" fish_on? "<<fishery_on_off<<endl;
+    echoinput<<" y-1 "<<y-1<<" t-nseas+1 "<<t-nseas+1<<" before_ave_size_updated "<<Ave_Size(t-nseas+1,1,1)(nages-2,nages)<<endl;
+    echoinput<<" y "<<y<<" t "<<t+1<<" before_ave_size_updated "<<Ave_Size(t+1,1,1)(nages-2,nages)<<endl;
+   	get_growth2(y);
+   	echoinput<<"Lmin, L_inf "<<Lmin(1)<<" "<<L_inf(1)<<endl;
+    t=styr+(y-styr)*nseas-1;
+    echoinput<<" "<<y<<" starting_ave_size_updated "<<Ave_Size(t,1,1)(nages-2,nages)<<endl;
+    get_wtlen();   //  does all seasons
     for (s=1;s<=nseas;s++)
     {
     	t++;
@@ -1353,25 +1363,26 @@ FUNCTION void Get_Forecast()
         get_growth3(y,t,s, subseas);  //  in case needed for Lorenzen M
         Make_AgeLength_Key(s, subseas);
       }
-      if(s==spawn_seas) Make_Fecundity();
     }
+    get_mat_fec();  //  does only spawn_seas  before year loop
+    if(Hermaphro_Option!=0) get_Hermaphro();
   }
 
-    for (y=endyr+1;y<=YrMax;y++)
+    for (y=endyr+1;y<=YrMax;y++)  // loop forecast years
     {
       t_base=styr+(y-styr)*nseas-1;
-   for(f=1;f<=N_SRparm2;f++)
-   {
-      if(SR_parm_timevary(f)==0)
-      {
-          //  no change to SR_parm_work
-      }
-      else
-      {
-        SR_parm_work(f)=parm_timevary(SR_parm_timevary(f),y);
-      }
-      SR_parm_byyr(y,f)=SR_parm_work(f);
-   }
+       for(f=1;f<=N_SRparm2;f++)
+       {
+          if(SR_parm_timevary(f)==0)
+          {
+              //  no change to SR_parm_work
+          }
+          else
+          {
+            SR_parm_work(f)=parm_timevary(SR_parm_timevary(f),y);
+          }
+          SR_parm_byyr(y,f)=SR_parm_work(f);
+       }
      	env_data(y,-1)=log(SSB_current/SSB_yr(styr-1));  //  store most recent value for density-dependent effects, NOTE - off by a year if recalc'ed at beginning of season 1
       env_data(y,-2)=recdev(y);  //  store for density-dependent effects
 
@@ -1384,7 +1395,6 @@ FUNCTION void Get_Forecast()
           get_growth3(y,t,s, subseas);  //  not needed because size-at-age already has been propagated to seas 1 subseas 1
           Make_AgeLength_Key(s, subseas);  //  this will give wt_age_beg before any time-varying parameter changes for this year
         }
-
         smrybio=0.0;
         smrynum=0.0;
         s=1;
@@ -1424,13 +1434,23 @@ FUNCTION void Get_Forecast()
       if(do_densitydependent==1)  make_densitydependent_parm(y);  //  call to adjust for density dependence
         
       if(timevary_MG(y,0)>0 || save_for_report>0) get_MGsetup(y);
-      if(timevary_MG(y,2)>0)
+      if(timevary_MG(y,2) || timevary_MG(y,3)) 
         {
-          ALK_subseas_update=1;
-          get_growth2(y);
+          ALK_subseas_update=1;  // this is a vector by ALK_IDX; fill with "1" indicates that all ALKs will need re-estimation
+          get_growth2(y);  //  does all seasons
+    echoinput<<" "<<y<<" ave_size_updated "<<Ave_Size(t,1,1)(nages-2,nages)<<endl;
+      		get_wtlen();   //  does all seasons
+          t=t_base+spawn_seas;
+          get_growth3(y,t,spawn_seas,spawn_subseas);
+          Make_AgeLength_Key(spawn_seas,spawn_subseas);  //  spawn subseas  other subseas done later as needed
+          get_mat_fec();  //  does only spawn_seas
+    echoinput<<" "<<y<<" ave_size_for_fec "<<Ave_Size(t,1,1)(nages-2,nages)<<endl;
+    echoinput<<y<<" fore_fec: "<<fec(1)<<endl;
+          if(Hermaphro_Option!=0) get_Hermaphro();
         }
-      if(timevary_MG(y,3)>0) get_wtlen();
+
       if(timevary_MG(y,1)>0) get_natmort();
+
       if(timevary_MG(y,4)>0 && Fcast_Loop_Control(3)!=3) 
       	{get_recr_distribution();}
       if(timevary_MG(y,5)>0) get_migration();
@@ -1460,28 +1480,47 @@ FUNCTION void Get_Forecast()
           t = t_base+s;
           if(ABC_Loop==ABC_Loop_start)  // do seasonal ALK and fishery selex
           {
-            if(timevary_MG(y,2)>0 || save_for_report>0)
-            {
-              subseas=1;  //   for begin of season   ALK_idx calculated within Make_AgeLength_Key
-              get_growth3(y,t,s, subseas);
-              Make_AgeLength_Key(s, subseas);  //  begin season
+//  *******************
+      if(WTage_rd>0)
+      {
+        for (g=1;g<=gmorph;g++)
+        if(use_morph(g)>0)
+        {
+          Wt_Age_beg(s,g)=WTage_emp(t,GP3(g),0);
+          Wt_Age_mid(s,g)=WTage_emp(t,GP3(g),-1);
+        if(s==spawn_seas) fec(g)=WTage_emp(t,GP3(g),-2);
+        }
+      }
+      else if(timevary_MG(y,2)>0 || timevary_MG(y,3)>0 ||  bigsaver==1 )
+      {
+//        subseas=1;  //  begin season
+        get_growth3(y,t,s,1);
+        Make_AgeLength_Key(s,1);
+        get_growth3(y,t,s, mid_subseas);
+        Make_AgeLength_Key(s, mid_subseas);  //  for midseason
+      }
+         for (g=1;g<=gmorph;g++)
+         if(use_morph(g)>0)
+         {
+           ALK_idx=(s-1)*N_subseas+1;  //  subseas=1
+           Wt_Age_beg(s,g)=(ALK(ALK_idx,g)*wt_len(s,GP(g)));  // wt-at-age at beginning of period
+           ALK_idx=(s-1)*N_subseas+mid_subseas;
+           Wt_Age_mid(s,g)=ALK(ALK_idx,g)*wt_len(s,GP(g));  // use for fisheries with no size selectivity
+         }
+//      }
 
-              subseas=mid_subseas;
-              get_growth3(y,t,s, subseas);
-              Make_AgeLength_Key(s, subseas);  //  for middle of season (begin of 3rd quarter)
+      Save_Wt_Age(t)=Wt_Age_beg(s);
 
-//  SPAWN-RECR:   call Make_Fecundity in forecast
-              if(s==spawn_seas)
-              {
-                subseas=spawn_subseas;
-                if(spawn_subseas!=1 && spawn_subseas!=mid_subseas)
-                {
-                  get_growth3(y,t,s, subseas);
-                  Make_AgeLength_Key(s, subseas);  //  spawn subseas
-                }
-              }
-            }
+      if(y>styr)    // because styr is done as part of initial conditions
+      {
+        for (g=1;g<=gmorph;g++)
+        if(use_morph(g)>0)
+        {Make_FishSelex();}
+      }
 
+
+//  ****************
+ /*
             if(WTage_rd>0)
             {
               for (g=1;g<=gmorph;g++)
@@ -1494,7 +1533,12 @@ FUNCTION void Get_Forecast()
             }
             else if(timevary_MG(y,2)>0 || timevary_MG(y,3)>0 ||  bigsaver==1 )
             {
-               Make_Fecundity();
+//              subseas=1;  //   for begin of season   ALK_idx calculated within Make_AgeLength_Key
+              get_growth3(y,t,s,1);
+              Make_AgeLength_Key(s,1);  //  begin season
+              get_growth3(y,t,s, mid_subseas);
+              Make_AgeLength_Key(s, mid_subseas);  //  for middle of season
+
                for (g=1;g<=gmorph;g++)
                if(use_morph(g)>0)
                {
@@ -1513,6 +1557,8 @@ FUNCTION void Get_Forecast()
             {
               Make_FishSelex();   // calcs fishery selex by current season, all fleets, current gmorph
             }
+
+ */
           }  //  end of seasonal biology
 
           if(s==nseas) {adv_age=1;} else {adv_age=0;}   //      advance age or not when doing survivorship

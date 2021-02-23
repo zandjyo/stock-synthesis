@@ -44,12 +44,6 @@ FUNCTION void setup_Benchmark()
         }
       }
         t=styr+(endyr+1-styr)*nseas+spawn_seas-1;
-      
-        for (g=1;g<=gmorph;g++)
-        if(use_morph(g)>0 && sx(g)==1)
-        {
-          fec(g)=save_sel_fec(t,g,0);
-       }
 
      if (Fcast_Loop_Control(3)==3)  //  using mean recruitment from range of years
      	{
@@ -1288,7 +1282,6 @@ FUNCTION void Get_Forecast()
   
   for (int Fcast_Loop1=1; Fcast_Loop1<=jloop;Fcast_Loop1++)  //   for different forecast conditions
   {
-   echoinput<<"Fcast_Loop1: "<<Fcast_Loop1<<endl;
     switch(Fcast_Loop1)  //  select which ABC_loops to use
     {
       case 1:  // do OFL only
@@ -1339,6 +1332,14 @@ FUNCTION void Get_Forecast()
     surv1=surv1_endyr;
     surv2=surv2_endyr;
     
+        t=styr+(endyr-styr)*nseas+spawn_seas-1;
+      
+        for (g=1;g<=gmorph;g++)
+        if(use_morph(g)>0 && sx(g)==1)
+        {
+          fec(g)=save_sel_fec(t,g,0);
+       }
+    
     y=endyr;
 
   {
@@ -1347,13 +1348,8 @@ FUNCTION void Get_Forecast()
 
     t=styr+(y-styr)*nseas-1;
 //    if(timevary_MG(y,0)>0 || save_for_report>0) get_MGsetup(y);
-    echoinput<<endl<<" styr_size: "<<Ave_Size(styr,1,1,nages)<<" endyr-10 "<<Ave_Size(endyr-10,1,1,nages)<<" fish_on? "<<fishery_on_off<<endl;
-    echoinput<<" y-1 "<<y-1<<" t-nseas+1 "<<t-nseas+1<<" before_ave_size_updated "<<Ave_Size(t-nseas+1,1,1)(nages-2,nages)<<endl;
-    echoinput<<" y "<<y<<" t "<<t+1<<" before_ave_size_updated "<<Ave_Size(t+1,1,1)(nages-2,nages)<<endl;
    	get_growth2(y);
-   	echoinput<<"Lmin, L_inf "<<Lmin(1)<<" "<<L_inf(1)<<endl;
     t=styr+(y-styr)*nseas-1;
-    echoinput<<" "<<y<<" starting_ave_size_updated "<<Ave_Size(t,1,1)(nages-2,nages)<<endl;
     get_wtlen();   //  does all seasons
     for (s=1;s<=nseas;s++)
     {
@@ -1438,16 +1434,17 @@ FUNCTION void Get_Forecast()
         {
           ALK_subseas_update=1;  // this is a vector by ALK_IDX; fill with "1" indicates that all ALKs will need re-estimation
           get_growth2(y);  //  does all seasons
-    echoinput<<" "<<y<<" ave_size_updated "<<Ave_Size(t,1,1)(nages-2,nages)<<endl;
       		get_wtlen();   //  does all seasons
           t=t_base+spawn_seas;
           get_growth3(y,t,spawn_seas,spawn_subseas);
           Make_AgeLength_Key(spawn_seas,spawn_subseas);  //  spawn subseas  other subseas done later as needed
           get_mat_fec();  //  does only spawn_seas
-    echoinput<<" "<<y<<" ave_size_for_fec "<<Ave_Size(t,1,1)(nages-2,nages)<<endl;
-    echoinput<<y<<" fore_fec: "<<fec(1)<<endl;
           if(Hermaphro_Option!=0) get_Hermaphro();
         }
+        else  //  carryover from previous year
+        	{
+        		save_sel_fec(t,g,0)=save_sel_fec(t-nseas,g,0);
+        	}
 
       if(timevary_MG(y,1)>0) get_natmort();
 

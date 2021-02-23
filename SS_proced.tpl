@@ -89,7 +89,6 @@ PROCEDURE_SECTION
       if(Do_Forecast>0)
       {
         show_MSY=0;
-        echoinput<<" in procedure; dynBzero "<<endl;
         Get_Forecast();
       }
       k=Do_Dyn_Bzero;
@@ -128,8 +127,6 @@ PROCEDURE_SECTION
       if(Do_Forecast>0)
       {
         if(show_MSY==1) report5<<"THIS FORECAST FOR PURPOSES OF STD REPORTING"<<endl;
-        echoinput<<"procedure: THIS FORECAST FOR PURPOSES OF STD REPORTING"<<endl;
-
         Get_Forecast();
       }
 

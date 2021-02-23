@@ -1442,8 +1442,8 @@ FUNCTION void get_mat_fec();
           make_mature_bio(g)=elem_prod(ALK(ALK_idx,g)*elem_prod(mat_len(GPat),wt_len(s,GP(g))),mat_age(GPat));  //  mature biomass at age
         }
       }
-        if(t>=styr) save_sel_fec(t,g,0)= fec(g);   //  save sel_al_3 and save fecundity for output
-        if(y==endyr) save_sel_fec(t+nseas,g,0)=fec(g);
+      if(t>=styr) save_sel_fec(t,g,0)= fec(g);   //  save sel_al_3 and save fecundity for output
+//        if(y==endyr) save_sel_fec(t+nseas,g,0)=fec(g);
           
  #ifdef DO_ONCE
      if(do_once==1){

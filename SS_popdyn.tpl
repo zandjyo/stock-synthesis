@@ -190,6 +190,7 @@ FUNCTION void get_initial_conditions()
          subseas=mid_subseas;
          ALK_idx=(s-1)*N_subseas+subseas;
          Wt_Age_mid(s,g)=ALK(ALK_idx,g)*wt_len(s,GP(g));  // use for fisheries with no size selectivity
+         save_sel_fec(t,g,0)= fec(g);
       }
     }
 
@@ -695,7 +696,10 @@ FUNCTION void get_time_series()
       {
         for (g=1;g<=gmorph;g++)
         if(use_morph(g)>0)
-        {Make_FishSelex();}
+        {Make_FishSelex();
+      save_sel_fec(t,g,0)= fec(g);   //  save sel_al_3 and save fecundity for output
+      if(y==endyr) save_sel_fec(t+nseas,g,0)=fec(g);
+        	}
       }
 
 //  SS_Label_Info_24.2.2 #Compute spawning biomass if this is spawning season so recruits could occur later this season
@@ -1438,7 +1442,6 @@ FUNCTION void get_time_series()
       }
     }
   } //close year loop
-
 //  Save end year quantities to refresh for forecast after benchmark is called
   recr_dist_endyr=recr_dist(endyr);
   natM_endyr=natM;

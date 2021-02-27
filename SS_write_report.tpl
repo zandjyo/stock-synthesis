@@ -1987,11 +1987,11 @@ FUNCTION void write_bigoutput()
       for (g=1;g<=gmorph;g++)
       if(use_morph(g)>0 && (y==styr-3 || y>=styr))
       {
-        if(s==spawn_seas && (sx(g)==1 || Hermaphro_Option!=0) ) SS2out<<"Fecund "<<" NA "<<" "<<y<<" "<<s<<" "<<sx(g)<<" "<<g<<" "<<y<<"_"<<"Fecund"<<save_sel_fec(t,g,0)<<endl;
+        if(s==spawn_seas && (sx(g)==1 || Hermaphro_Option!=0) ) SS2out<<"Fecund "<<" NA "<<" "<<y<<" "<<s<<" "<<sx(g)<<" "<<g<<" "<<y<<"_"<<"Fecund"<<save_sel_fec(0,t,g)<<endl;
         for (f=1;f<=Nfleet;f++)
         {
-          SS2out<<"Asel2 "<<f<<" "<<y<<" "<<s<<" "<<sx(g)<<" "<<g<<" "<<y<<"_"<<f<<"_Asel2"<<save_sel_fec(t,g,f)<<endl;
-          if(fleet_type(f)<=2) SS2out<<"F "<<f<<" "<<y<<" "<<s<<" "<<sx(g)<<" "<<g<<" "<<y<<"_"<<f<<"_F"<<Hrate(f,t)*save_sel_fec(t,g,f)<<endl;
+          SS2out<<"Asel2 "<<f<<" "<<y<<" "<<s<<" "<<sx(g)<<" "<<g<<" "<<y<<"_"<<f<<"_Asel2"<<save_sel_fec(f,t,g)<<endl;
+          if(fleet_type(f)<=2) SS2out<<"F "<<f<<" "<<y<<" "<<s<<" "<<sx(g)<<" "<<g<<" "<<y<<"_"<<f<<"_F"<<Hrate(f,t)*save_sel_fec(f,t,g)<<endl;
           SS2out<<"bodywt "<<f<<" "<<y<<" "<<s<<" "<<sx(g)<<" "<<g<<" "<<y<<"_"<<f<<"_bodywt"<<fish_body_wt(t,g,f)<<endl;
         }
       }
@@ -2242,7 +2242,7 @@ FUNCTION void write_bigoutput()
            {SS2out<<" TIME ";}
          else
            {SS2out<<" FORE ";}
-         SS2out<<Hrate(f,t)*save_sel_fec(t,g,f)<< endl;
+         SS2out<<Hrate(f,t)*save_sel_fec(f,t,g)<< endl;
        }
      }
      }
@@ -2437,7 +2437,7 @@ FUNCTION void write_bigoutput()
               get_growth3(styr,t,s, subseas);
               Make_AgeLength_Key(s, subseas);  //  spawn subseas
             }
-            Make_Fecundity();
+            get_mat_fec();
           }
         }
       }
@@ -3265,7 +3265,7 @@ FUNCTION void write_bigoutput()
         //don't call get_growth3(subseas) because using an average ave_size
             Make_AgeLength_Key(s, subseas);  //  spawn subseas
           }
-          Make_Fecundity();
+          get_mat_fec();
         }
       }
       for (g=1;g<=gmorph;g++)

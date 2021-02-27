@@ -406,7 +406,7 @@ PARAMETER_SECTION
   4darray deadfish(1,nseas,1,gmorph,1,Nfleet,0,nages);  // sel * (retain + (1-retain)*discmort)
   4darray deadfish_B(1,nseas,1,gmorph,1,Nfleet,0,nages);  // sel * (retain + (1-retain)*discmort) * wt
 
-  4darray save_sel_fec(styr-3*nseas,TimeMax_Fcast_std+nseas,1,gmorph,0,Nfleet,0,nages)  //  save sel_al_3 (Asel_2) and save fecundity for output;  +nseas covers no forecast setups
+  4darray save_sel_fec(0,Nfleet,styr-3*nseas,TimeMax_Fcast_std+nseas,1,gmorph,0,nages)  //  save sel_al_3 (Asel_2) and save fecundity for output;  +nseas covers no forecast setups
 
   4darray Sel_for_tag(TG_timestart*Do_TG,TimeMax*Do_TG,1,gmorph*Do_TG,1,Nfleet,0,nages)
   vector TG_report(1,Nfleet*Do_TG);

@@ -1370,6 +1370,8 @@ FUNCTION void get_mat_fec();
     }
 
     if (do_once==1) echoinput<<"maturity option: "<<Maturity_Option<<" parms: "<<wtlen_p(GPat)(3,4)<<endl;
+    dvar_matrix ALK_w=ALK(ALK_idx,g);        //  shallow copy
+
     switch(Maturity_Option)
     {
       case 1:  //  Maturity_Option=1  length logistic
@@ -1377,7 +1379,7 @@ FUNCTION void get_mat_fec();
         mat_len(GPat) = 1./(1. + mfexp(wtlen_p(GPat,4)*(len_bins_m(1,nlength)-wtlen_p(GPat,3))));
         mat_fec_len(gp) = elem_prod(mat_len(gp),fec_len(gp));
         make_mature_numbers(g)(First_Mature_Age,nages)=1.0;
-        make_mature_numbers(g)=elem_prod(make_mature_numbers(g),ALK(ALK_idx,g)*mat_len(GPat));  //  covers both age and length dimension
+        make_mature_numbers(g)=elem_prod(make_mature_numbers(g),ALK_w*mat_len(GPat));  //  covers both age and length dimension
         break;
       }
       case 2:  //  Maturity_Option=2  age logistic
@@ -1402,7 +1404,7 @@ FUNCTION void get_mat_fec();
         mat_len(GPat)=Length_Maturity(GPat);
         mat_fec_len(gp) = elem_prod(mat_len(gp),fec_len(gp));
         make_mature_numbers(g)(First_Mature_Age,nages)=1.0;
-        make_mature_numbers(g)=elem_prod(make_mature_numbers(g),ALK(ALK_idx,g)*mat_len(GPat));  //  covers both age and length dimension
+        make_mature_numbers(g)=elem_prod(make_mature_numbers(g),ALK_w*mat_len(GPat));  //  covers both age and length dimension
         break;
       }
       case 5:  //  Maturity_Option=5   read age-fecundity from wtatage.ss disabled different flag now used
@@ -1433,17 +1435,17 @@ FUNCTION void get_mat_fec();
         		
         	}
           int ALK_finder=(ALK_idx-1)*gmorph+g;
-          for(a=First_Mature_Age;a<=nages;a++)
-          {
-            tempvec_a(a) = ALK(ALK_idx,g,a)(ALK_range_g_lo(ALK_finder,a),ALK_range_g_hi(ALK_finder,a)) *mat_fec_len(GPat)(ALK_range_g_lo(ALK_finder,a),ALK_range_g_hi(ALK_finder,a));
-          }
+//          for(a=First_Mature_Age;a<=nages;a++)
+//          {
+//            tempvec_a(a) = ALK_w(a)(ALK_range_g_lo(ALK_finder,a),ALK_range_g_hi(ALK_finder,a)) *mat_fec_len(GPat)(ALK_range_g_lo(ALK_finder,a),ALK_range_g_hi(ALK_finder,a));
+//          }
+          tempvec_a = ALK_w * mat_fec_len(GPat);
           fec(g)(First_Mature_Age,nages) = elem_prod(tempvec_a(First_Mature_Age,nages),mat_age(GPat)(First_Mature_Age,nages));  //  reproductive output at age
-          make_mature_numbers(g)=elem_prod(ALK(ALK_idx,g)*mat_len(GPat),mat_age(GPat));  //  mature numbers at age
-          make_mature_bio(g)=elem_prod(ALK(ALK_idx,g)*elem_prod(mat_len(GPat),wt_len(s,GP(g))),mat_age(GPat));  //  mature biomass at age
+          make_mature_numbers(g)=elem_prod(ALK_w*mat_len(GPat),mat_age(GPat));  //  mature numbers at age
+          make_mature_bio(g)=elem_prod(ALK_w*elem_prod(mat_len(GPat),wt_len(s,GP(g))),mat_age(GPat));  //  mature biomass at age
         }
       }
-      if(t>=styr) save_sel_fec(t,g,0)= fec(g);   //  save sel_al_3 and save fecundity for output
-//        if(y==endyr) save_sel_fec(t+nseas,g,0)=fec(g);
+      if(t>=styr) save_sel_fec(0,t,g)= fec(g);   //  save sel_al_3 and save fecundity for output
           
  #ifdef DO_ONCE
      if(do_once==1){
@@ -1744,7 +1746,7 @@ FUNCTION void get_saveGparm()
     }
   }  //  end save_gparm
 
-FUNCTION void Make_Fecundity()
+FUNCTION void Make_Fecundity_deprecate()
   {
 //********************************************************************
 //  this Make_Fecundity function does the dot product of the distribution of length-at-age (ALK) with maturity and fecundity vectors
@@ -1847,7 +1849,7 @@ FUNCTION void Make_Fecundity()
       else
       {fec(g)=WTage_emp(t,GP3(g),-2);}
  */
-        if(t>=styr) save_sel_fec(t,g,0)= fec(g);   //  save sel_al_3 and save fecundity for output
-        if(y==endyr) save_sel_fec(t+nseas,g,0)=fec(g);
+        if(t>=styr) save_sel_fec(0,t,g)= fec(g);   //  save sel_al_3 and save fecundity for output
+        if(y==endyr) save_sel_fec(0,t+nseas,g)=fec(g);
     }
   }

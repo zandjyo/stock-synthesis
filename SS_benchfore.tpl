@@ -149,9 +149,9 @@ FUNCTION void setup_Benchmark()
               tempvec_a.initialize();
               for (t=Bmark_t(1);t<=Bmark_t(2);t+=nseas) 
               {
-                tempvec_a+=save_sel_fec(t+s,g,f);
+                tempvec_a+=save_sel_fec(f,t+s,g);
               }
-              save_sel_fec(styr-3*nseas+s,g,f)=tempvec_a/temp;
+              save_sel_fec(f,styr-3*nseas+s,g)=tempvec_a/temp;
             }
 // natmort_unf is accumulated while doing the time_series
 // then it's mean is calculated in Get_Benchmarks and assigned back to natmort
@@ -342,7 +342,7 @@ FUNCTION void Get_Benchmarks(const int show_MSY)
   //  SPAWN-RECR:   call make_fecundity for benchmarks
         if(s==spawn_seas)
         {
-          for(g=1;g<=gmorph;g++) {fec(g)=save_sel_fec(styr-3*nseas+s-1,g,0);}
+          for(g=1;g<=gmorph;g++) {fec(g)=save_sel_fec(0,styr-3*nseas+s-1,g);}
         }
         for(g=1;g<=gmorph;g++)
         {
@@ -1333,13 +1333,11 @@ FUNCTION void Get_Forecast()
     surv2=surv2_endyr;
     
         t=styr+(endyr-styr)*nseas+spawn_seas-1;
-      
         for (g=1;g<=gmorph;g++)
         if(use_morph(g)>0 && sx(g)==1)
         {
-          fec(g)=save_sel_fec(t,g,0);
+          fec(g)=save_sel_fec(0,t,g);
        }
-    
     y=endyr;
 
   {
@@ -1443,9 +1441,10 @@ FUNCTION void Get_Forecast()
         }
         else  //  carryover from previous year
         	{
-        		save_sel_fec(t,g,0)=save_sel_fec(t-nseas,g,0);
+            t=t_base+spawn_seas;
+        		save_sel_fec(0,t)=save_sel_fec(0,t-nseas);
         	}
-
+  echoinput<<" did growth in "<<y<<endl;
       if(timevary_MG(y,1)>0) get_natmort();
 
       if(timevary_MG(y,4)>0 && Fcast_Loop_Control(3)!=3) 

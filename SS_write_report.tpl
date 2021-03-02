@@ -2513,7 +2513,7 @@ FUNCTION void write_bigoutput()
 // REPORT_KEYWORD 48 MEAN_BODY_WT by year
   if(pick_report_use(48)=="Y")  {
     SS2out<<endl<<pick_report_name(48)<<endl;
-  if(WTage_rd>0) SS2out<<" as read from wtatage.ss";
+  if(WTage_rd>0) SS2out<<" as read from wtatage.ss ";
   SS2out<<"#NOTE: yr=_"<<styr-3<<"_stores_values_for_benchmark"<<endl;
   SS2out <<"Morph Yr Seas"<<age_vector<<endl;
     for (g=1;g<=gmorph;g++)

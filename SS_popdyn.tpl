@@ -679,7 +679,6 @@ FUNCTION void get_time_series()
         Make_AgeLength_Key(s,1);
         get_growth3(y,t,s, mid_subseas);
         Make_AgeLength_Key(s, mid_subseas);  //  for midseason
-      }
          for (g=1;g<=gmorph;g++)
          if(use_morph(g)>0)
          {
@@ -688,6 +687,7 @@ FUNCTION void get_time_series()
            ALK_idx=(s-1)*N_subseas+mid_subseas;
            Wt_Age_mid(s,g)=ALK(ALK_idx,g)*wt_len(s,GP(g));  // use for fisheries with no size selectivity
          }
+      }
 //      }
 
       Save_Wt_Age(t)=Wt_Age_beg(s);
@@ -1381,7 +1381,6 @@ FUNCTION void get_time_series()
             if(F_reporting<=1)
             {
               F_std(STD_Yr_Reverse_F(y))=annual_catch(y,2)/Smry_Table(y,2);  // dead catch biomass/summary biomass
-                                                                             //  does not exactly correspond to F, which is for total catch
             }
             else if(F_reporting==2)
             {
@@ -1457,7 +1456,6 @@ FUNCTION void get_time_series()
  }
 
   if(Do_TG>0) Tag_Recapture();
-
   }  //  end time_series
 // #ifdef DO_ONCE
 //          if(do_once==1) echoinput<<" finished time series "<<endl;

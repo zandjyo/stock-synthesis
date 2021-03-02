@@ -144,6 +144,7 @@ FUNCTION void setup_Benchmark()
             tempvec_a.initialize();
             for (t=Bmark_t(1);t<=Bmark_t(2);t+=nseas) {tempvec_a+=Save_Wt_Age(t+s,g);}
             Save_Wt_Age(styr-3*nseas+s,g)=tempvec_a/temp;
+            warning<<" get bench wt_age "<<Save_Wt_Age(styr-3*nseas+s,g)<<endl;
             for (f=0;f<=Nfleet;f++)  //  goes to Nfleet because this contains fecundity as well as asel2(f)
             {
               tempvec_a.initialize();
@@ -1494,7 +1495,6 @@ FUNCTION void Get_Forecast()
         Make_AgeLength_Key(s,1);
         get_growth3(y,t,s, mid_subseas);
         Make_AgeLength_Key(s, mid_subseas);  //  for midseason
-      }
          for (g=1;g<=gmorph;g++)
          if(use_morph(g)>0)
          {
@@ -1503,6 +1503,7 @@ FUNCTION void Get_Forecast()
            ALK_idx=(s-1)*N_subseas+mid_subseas;
            Wt_Age_mid(s,g)=ALK(ALK_idx,g)*wt_len(s,GP(g));  // use for fisheries with no size selectivity
          }
+      }
 //      }
 
       Save_Wt_Age(t)=Wt_Age_beg(s);

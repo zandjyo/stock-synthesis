@@ -720,7 +720,7 @@ FINAL_SECTION
     }
     if(write_bodywt>0)
     {
-    bodywtout<<-9999<<" "<<1<<" "<<1<<" "<<1<<" "<<1<<" "<<0<<" "<<Wt_Age_mid(1,1)<<" #terminator "<<endl;
+    bodywtout<<-9999<<" "<<1<<" "<<1<<" "<<1<<" "<<1<<" "<<0<<" 999  #terminator "<<endl;
     bodywtout.close();
     }
     write_bodywt=0;

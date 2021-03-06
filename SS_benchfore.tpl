@@ -1443,7 +1443,11 @@ FUNCTION void Get_Forecast()
         }
         else  //  carryover from previous year
         	{
+        for (g=1;g<=gmorph;g++) {
+		  	if(use_morph(g)>0)
+	  		{
         		save_sel_fec(t,g,0)=save_sel_fec(t-nseas,g,0);
+        	}}
         	}
 
       if(timevary_MG(y,1)>0) get_natmort();
